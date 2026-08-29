@@ -21,12 +21,7 @@ const TOOL_LABELS: Record<string, string> = {
   check_credits: "Checking FortyGuard credits (POST /v1/system/fetch-api-key-usage)",
 };
 
-// The first prompt uses the one origin/destination/date combination verified (by repeated
-// real API calls) to actually produce a different heat-optimized route — most pairs/dates in
-// this compact pilot area come back identical, which is honest data-driven behavior, not a bug.
 const EXAMPLE_PROMPTS = [
-  "I'm walking from Encanto Sports Complex to St Gregory Parish Hall around 2pm on July 20th 2025. Avoid the worst heat and tell me why the bad blocks are bad.",
-  "How hot is it around Encanto Park right now? Should I walk or wait?",
   "Give me a detailed heat intelligence report for Encanto Park on July 15th 2024.",
 ];
 

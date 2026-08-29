@@ -40,7 +40,11 @@ interface PollOptions {
 const DEFAULT_BACKOFF_MS = [3000, 5000, 8000, 12000, 20000, 20000, 20000];
 // Heat Intelligence reports can take "several minutes" per FortyGuard's docs —
 // poll longer, but still bounded so the agent turn doesn't hang indefinitely.
-const HEAT_INTELLIGENCE_BACKOFF_MS = [5000, 10000, 15000, 20000, 30000, 30000, 30000];
+// Heat Intelligence generates a full PDF report and genuinely takes 2-4 minutes; measured
+// ~154s+ live. Budget ~5 min of polling so it actually completes instead of timing out.
+const HEAT_INTELLIGENCE_BACKOFF_MS = [
+  5000, 10000, 15000, 20000, 30000, 30000, 30000, 30000, 30000, 30000, 30000, 30000,
+];
 
 export class FortyGuardClient {
   private baseUrl: string;

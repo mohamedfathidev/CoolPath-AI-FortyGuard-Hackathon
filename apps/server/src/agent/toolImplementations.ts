@@ -108,7 +108,16 @@ async function toolGetHeatIntelligence(
       temperatureF: celsiusToFahrenheit(tempC),
       analysis: ["environmental", "urban"],
     });
-    return { forModel: { available: true, source: "FortyGuard POST /v1/heat_intelligence", downloadLink: result.download_link } };
+    // FortyGuard returns a temporary signed URL that embeds our API key — their docs say never
+    // share it, so we never send it to the model/browser. We only confirm the report generated.
+    return {
+      forModel: {
+        available: true,
+        source: "FortyGuard POST /v1/heat_intelligence",
+        reportGenerated: Boolean(result.download_link),
+        note: "The full Heat Intelligence PDF (geographic, environmental, urban, events, anthropogenic analysis) was generated successfully. Do not fabricate a download URL — tell the user the report is ready and summarize the heat conditions from the heatmap/env data instead.",
+      },
+    };
   } catch (err) {
     // Premium/slow endpoint — degrade gracefully per plan §3, never block the agent turn.
     const reason = err instanceof FortyGuardApiError ? err.message : "Heat Intelligence is temporarily unavailable.";

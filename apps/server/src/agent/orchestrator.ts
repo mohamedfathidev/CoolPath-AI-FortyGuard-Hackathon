@@ -15,7 +15,11 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** gemini-3.7-flash has been returning transient 503 "high demand" errors — retry a few times before giving up. */
+/**
+ * Retry only transient 503 "high demand" errors. A 429 is a quota wall — Gemini's own retry
+ * hint is tens of seconds, so retrying (or even trying again at all) just delays the inevitable
+ * fallback. Fail fast on 429 so we hand off to NVIDIA immediately instead of stalling ~10s.
+ */
 async function generateContentWithRetry(
   ai: GoogleGenAI,
   params: Parameters<GoogleGenAI["models"]["generateContent"]>[0]
@@ -25,8 +29,7 @@ async function generateContentWithRetry(
       return await ai.models.generateContent(params);
     } catch (err) {
       const status = (err as { status?: number }).status;
-      const isRetryable = status === 503 || status === 429;
-      if (!isRetryable || attempt >= GEMINI_RETRY_BACKOFF_MS.length) throw err;
+      if (status !== 503 || attempt >= GEMINI_RETRY_BACKOFF_MS.length) throw err;
       await sleep(GEMINI_RETRY_BACKOFF_MS[attempt]);
     }
   }
@@ -174,8 +177,20 @@ async function callNvidia(messages: OpenAiMessage[]): Promise<{
   return data.choices[0].message;
 }
 
-/** Fallback provider when Gemini's free-tier quota is exhausted. Nemotron is a reasoning
- * model — its "thinking" is a separate field we never see here, so nothing to strip. */
+// Nemotron is a reasoning model that otherwise dumps its whole chain-of-thought into `content`.
+// "detailed thinking off" is its documented directive to return only the final answer. As a
+// safety net we also strip any leaked "thinking process" preamble before a markdown answer.
+function stripThinking(text: string): string {
+  const withoutTags = text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+  // If the model still narrated its reasoning, keep only from the first markdown heading/bold.
+  const match = withoutTags.match(/(^|\n)\s*(#{1,6}\s|\*\*)/);
+  if (/thinking process|let me|i need to|i'll|analyze user input/i.test(withoutTags.slice(0, 200)) && match) {
+    return withoutTags.slice(match.index!).trim();
+  }
+  return withoutTags;
+}
+
+/** Fallback provider when Gemini's free-tier quota is exhausted. */
 async function runWithNvidia(
   userMessage: string,
   ctx: ToolContext,
@@ -183,7 +198,7 @@ async function runWithNvidia(
   onEvent?: (event: AgentEvent) => void
 ): Promise<string> {
   const messages: OpenAiMessage[] = [
-    { role: "system", content: buildSystemPrompt() },
+    { role: "system", content: `detailed thinking off\n\n${buildSystemPrompt()}` },
     { role: "user", content: userMessage },
   ];
 
@@ -191,7 +206,7 @@ async function runWithNvidia(
     const message = await callNvidia(messages);
 
     if (!message.tool_calls || message.tool_calls.length === 0) {
-      return message.content ?? "";
+      return stripThinking(message.content ?? "");
     }
 
     messages.push({ role: "assistant", content: message.content, tool_calls: message.tool_calls });
@@ -217,30 +232,50 @@ async function runWithNvidia(
     state.toolTrace.map((t) => `${t.name} (${t.ok ? "ok" : "failed"})`).join(", ");
 }
 
+// Gemini's free tier is a DAILY quota, so once it's exhausted every request would waste a
+// round-trip getting rejected. After a 429 we skip Gemini entirely for this long and go
+// straight to the fallback — cleared automatically once the window passes (or the process restarts).
+const GEMINI_QUOTA_COOLDOWN_MS = 10 * 60 * 1000;
+let geminiBlockedUntil = 0;
+
 export async function runAgent(
   userMessage: string,
   ctx: ToolContext,
   onEvent?: (event: AgentEvent) => void
 ): Promise<AgentRunResult> {
   const state: RunState = { toolTrace: [] };
+  const hasNvidia = Boolean(process.env.NVIDIA_API_KEY);
+  const geminiOnCooldown = hasNvidia && Date.now() < geminiBlockedUntil;
 
   let answer: string;
   let model: string;
-  try {
-    answer = await runWithGemini(userMessage, ctx, state, onEvent);
-    model = GEMINI_MODEL;
-  } catch (err) {
-    if (!process.env.NVIDIA_API_KEY) throw err;
-    // Gemini exhausted its retries (typically a free-tier quota wall) — restart the whole
-    // turn on NVIDIA Nemotron rather than trying to splice two providers' histories together.
-    // Any tool calls Gemini already made get redone, but they hit our cache so it's cheap.
+
+  const runFallback = async () => {
     answer = await runWithNvidia(userMessage, ctx, state, onEvent);
     model = NVIDIA_MODEL;
+  };
+
+  if (geminiOnCooldown) {
+    // Known-exhausted Gemini quota — don't even try it, go straight to NVIDIA.
+    await runFallback();
+  } else {
+    try {
+      answer = await runWithGemini(userMessage, ctx, state, onEvent);
+      model = GEMINI_MODEL;
+    } catch (err) {
+      if (!hasNvidia) throw err;
+      if ((err as { status?: number }).status === 429) {
+        geminiBlockedUntil = Date.now() + GEMINI_QUOTA_COOLDOWN_MS;
+      }
+      // Restart the whole turn on NVIDIA rather than splicing two providers' histories.
+      // Tool calls Gemini already made get redone, but they hit our cache so it's cheap.
+      await runFallback();
+    }
   }
 
-  onEvent?.({ type: "model", model });
-  onEvent?.({ type: "final", answer, model });
-  return { finalAnswer: answer, toolTrace: state.toolTrace, routeResult: state.routeResult, model };
+  onEvent?.({ type: "model", model: model! });
+  onEvent?.({ type: "final", answer: answer!, model: model! });
+  return { finalAnswer: answer!, toolTrace: state.toolTrace, routeResult: state.routeResult, model: model! };
 }
 
 function summarize(value: unknown): string {
