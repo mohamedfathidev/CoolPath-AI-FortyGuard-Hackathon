@@ -1,0 +1,281 @@
+<title>CoolPath AI Pitch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground:#FBF8F3; --surface:#FFFFFF; --surface-2:#F4EEE4; --ink:#1C1815;
+    --soft:#5C5348; --faint:#8A8074; --line:#E7DFD1; --line-2:#D6CBB8;
+    --hot:#C0402A; --hot-2:#E08A2E; --wash:#F6E7DC; --cool:#2C6E9E; --cool-wash:#E1ECF3; --good:#4B8B3B;
+  }
+  :root:not([data-theme="light"]){ @media (prefers-color-scheme:dark){
+    --ground:#15120E; --surface:#1E1A15; --surface-2:#251F19; --ink:#F1EBE0;
+    --soft:#ABA091; --faint:#7C7266; --line:#2F2820; --line-2:#3C3428;
+    --hot:#E4744F; --hot-2:#E8A13C; --wash:#2A1C15; --cool:#63A6D2; --cool-wash:#16232C; --good:#86C06F;
+  }}
+  :root[data-theme="dark"]{
+    --ground:#15120E; --surface:#1E1A15; --surface-2:#251F19; --ink:#F1EBE0;
+    --soft:#ABA091; --faint:#7C7266; --line:#2F2820; --line-2:#3C3428;
+    --hot:#E4744F; --hot-2:#E8A13C; --wash:#2A1C15; --cool:#63A6D2; --cool-wash:#16232C; --good:#86C06F;
+  }
+  * { box-sizing:border-box; margin:0; }
+  html,body { height:100%; }
+  body {
+    background:var(--ground); color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,sans-serif; overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3 { font-family:"Fraunces",Georgia,serif; font-weight:600; line-height:1.05; text-wrap:balance; }
+
+  .deck { height:100vh; width:100vw; position:relative; }
+  .slide {
+    position:absolute; inset:0; display:none;
+    padding:clamp(36px,6vw,88px);
+    flex-direction:column; justify-content:center;
+    opacity:0; transition:opacity .45s ease;
+  }
+  .slide.active { display:flex; opacity:1; }
+  .inner { max-width:1080px; margin:0 auto; width:100%; }
+
+  .eyebrow {
+    font-family:"IBM Plex Mono",monospace; font-size:clamp(.72rem,1.1vw,.9rem);
+    letter-spacing:.22em; text-transform:uppercase; color:var(--hot);
+    display:flex; align-items:center; gap:.9em; margin-bottom:clamp(18px,3vh,34px);
+  }
+  .eyebrow::before { content:""; width:34px; height:2px; background:var(--hot); }
+
+  h1.title { font-size:clamp(3.2rem,10vw,7rem); letter-spacing:-.02em; }
+  h1.title .it { font-style:italic; font-weight:400; color:var(--soft); }
+  h2 { font-size:clamp(2rem,5.5vw,4rem); letter-spacing:-.01em; }
+  .lede { font-size:clamp(1.15rem,2.4vw,1.7rem); color:var(--soft); line-height:1.45; max-width:24ch; margin-top:clamp(18px,3vh,30px); }
+  .lede.wide { max-width:34ch; }
+  .lede b { color:var(--ink); font-weight:600; }
+  .hook {
+    margin-top:clamp(24px,4vh,44px); padding-left:22px; border-left:3px solid var(--hot);
+    font-size:clamp(1.1rem,2.3vw,1.55rem); color:var(--ink); max-width:30ch; line-height:1.4;
+  }
+
+  .bigstat { font-family:"Fraunces",serif; font-weight:600; font-size:clamp(4rem,14vw,9rem); color:var(--hot); letter-spacing:-.03em; line-height:.9; font-variant-numeric:tabular-nums; }
+  .bigstat .u { font-size:.32em; color:var(--soft); font-weight:500; }
+  .points { display:flex; flex-direction:column; gap:14px; margin-top:clamp(20px,3vh,32px); max-width:40ch; }
+  .points li { list-style:none; display:flex; gap:14px; align-items:baseline; font-size:clamp(1rem,1.9vw,1.3rem); color:var(--soft); line-height:1.4; }
+  .points li::before { content:""; width:8px; height:8px; border-radius:50%; background:var(--hot); flex-shrink:0; transform:translateY(.5em); }
+  .points li b { color:var(--ink); font-weight:600; }
+
+  .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(14px,1.6vw,22px); margin-top:clamp(22px,3.5vh,40px); }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:clamp(20px,2.4vw,30px); }
+  .card .n { font-family:"IBM Plex Mono",monospace; font-size:.8rem; letter-spacing:.1em; color:var(--hot); margin-bottom:12px; }
+  .card h3 { font-size:clamp(1.3rem,2.4vw,1.75rem); margin-bottom:8px; }
+  .card p { font-size:clamp(.92rem,1.5vw,1.05rem); color:var(--soft); line-height:1.45; }
+
+  .callout { margin-top:clamp(22px,3.5vh,38px); background:var(--cool-wash); border-left:3px solid var(--cool); border-radius:0 14px 14px 0; padding:clamp(18px,2.2vw,26px); max-width:52ch; }
+  .callout .l { font-family:"IBM Plex Mono",monospace; font-size:.76rem; letter-spacing:.12em; text-transform:uppercase; color:var(--cool); margin-bottom:8px; }
+  .callout p { font-size:clamp(1rem,1.8vw,1.25rem); color:var(--ink); line-height:1.4; }
+  .callout p b { color:var(--cool); }
+
+  .arch { display:flex; flex-direction:column; gap:10px; margin-top:clamp(20px,3vh,32px); max-width:60ch; }
+  .arow { display:flex; align-items:center; gap:14px; }
+  .arow .lbl { font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--faint); width:70px; text-align:right; flex-shrink:0; }
+  .abox { background:var(--surface-2); border:1px solid var(--line-2); border-radius:10px; padding:11px 16px; font-size:clamp(.9rem,1.5vw,1.08rem); flex:1; }
+  .abox.hot { border-color:var(--hot); background:var(--wash); }
+  .abox.cool { border-color:var(--cool); background:var(--cool-wash); }
+  .abox b { font-weight:600; }
+  .abox span { color:var(--soft); font-size:.86em; }
+
+  .apitable { width:100%; border-collapse:collapse; margin-top:clamp(18px,2.5vh,30px); font-size:clamp(.92rem,1.6vw,1.15rem); }
+  .apitable td { padding:clamp(9px,1.4vh,15px) 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  .apitable tr:last-child td { border-bottom:none; }
+  .apitable .ep { font-family:"IBM Plex Mono",monospace; color:var(--hot); white-space:nowrap; font-size:.9em; padding-right:24px; }
+  .apitable .use { color:var(--soft); }
+  .apitable .use b { color:var(--ink); font-weight:600; }
+  .apinote { margin-top:18px; font-size:clamp(.9rem,1.5vw,1.05rem); color:var(--faint); }
+  .apinote b { color:var(--good); font-weight:600; }
+
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:clamp(18px,2.4vw,36px); margin-top:clamp(20px,3vh,34px); }
+  .grid2 h3 { font-family:"IBM Plex Sans",sans-serif; font-size:1.05rem; font-weight:600; color:var(--hot); margin-bottom:10px; }
+  .grid2 .points { margin-top:0; }
+  .closing { margin-top:clamp(24px,4vh,40px); font-family:"Fraunces",serif; font-size:clamp(1.3rem,2.8vw,2rem); font-style:italic; color:var(--soft); max-width:26ch; line-height:1.25; }
+  .closing b { color:var(--hot); font-style:normal; }
+
+  /* chrome */
+  .progress { position:fixed; top:0; left:0; height:4px; background:var(--hot); transition:width .4s ease; z-index:20; }
+  .counter { position:fixed; bottom:26px; right:32px; font-family:"IBM Plex Mono",monospace; font-size:.8rem; color:var(--faint); letter-spacing:.1em; z-index:20; }
+  .counter b { color:var(--hot); }
+  .brand { position:fixed; bottom:26px; left:32px; font-family:"IBM Plex Mono",monospace; font-size:.78rem; color:var(--faint); letter-spacing:.06em; z-index:20; }
+  .nav { position:fixed; bottom:22px; left:50%; transform:translateX(-50%); display:flex; gap:8px; z-index:20; }
+  .nav button { width:34px; height:34px; border-radius:50%; border:1px solid var(--line-2); background:var(--surface); color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .nav button:hover { border-color:var(--hot); color:var(--hot); }
+  .nav button:focus-visible { outline:2px solid var(--hot); outline-offset:2px; }
+  .hint { position:fixed; top:22px; right:32px; font-family:"IBM Plex Mono",monospace; font-size:.72rem; color:var(--faint); z-index:20; }
+
+  @media (max-width:760px){
+    .cards { grid-template-columns:1fr; gap:12px; }
+    .grid2 { grid-template-columns:1fr; }
+    .arow .lbl { width:52px; }
+    .brand,.hint { display:none; }
+  }
+  @media (prefers-reduced-motion:reduce){ .slide,.progress{ transition:none; } }
+</style>
+
+<div class="progress" id="prog"></div>
+<div class="hint">← → to navigate</div>
+<div class="brand">CoolPath AI · FortyGuard Hackathon '26</div>
+<div class="counter"><b id="cur">1</b> / 7</div>
+
+<div class="deck" id="deck">
+
+  <!-- 1 · TITLE -->
+  <section class="slide active">
+    <div class="inner">
+      <div class="eyebrow">FortyGuard Hackathon '26 · Resilient Cities</div>
+      <h1 class="title">CoolPath <span class="it">AI</span></h1>
+      <p class="lede wide">A heat-aware walking route planner and urban heat-island map for Phoenix.</p>
+      <p class="hook">In a Phoenix summer, walking through the heat isn't a choice — it's a health risk. CoolPath makes it navigable.</p>
+    </div>
+  </section>
+
+  <!-- 2 · PROBLEM -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">The problem</div>
+      <h2>Heat is a mobility barrier.</h2>
+      <div class="bigstat" style="margin-top:clamp(20px,4vh,44px)">13+<span class="u"> hrs/day above 95°F</span></div>
+      <ul class="points">
+        <li><b>Regular maps only optimize distance</b> — routing people straight down the hottest, most sun-exposed corridors.</li>
+        <li><b>Climate change</b> makes every Phoenix summer hotter and longer, widening the gap between safe and dangerous routes.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 3 · SOLUTION -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">The solution</div>
+      <h2>Three ways in, one heat model.</h2>
+      <div class="cards">
+        <div class="card">
+          <div class="n">01 · Map</div>
+          <h3>Plan a route</h3>
+          <p>Origin, destination, time → the shortest route and a heat-optimized route side by side, with the exact trade-off in distance and heat avoided.</p>
+        </div>
+        <div class="card">
+          <div class="n">02 · Agent</div>
+          <h3>Ask the agent</h3>
+          <p>A plain-language brief drives an autonomous AI agent that geocodes, pulls heat data, routes, and explains — source-cited, streamed live.</p>
+        </div>
+        <div class="card">
+          <div class="n">03 · Climate</div>
+          <h3>Heat islands</h3>
+          <p>A city-wide map colouring every block by daily hours of extreme heat — naming the hottest zones and where cooling matters most.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · THE OPPORTUNITY (business) -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">The opportunity</div>
+      <h2>The coolest route — a gap no map fills.</h2>
+      <ul class="points" style="max-width:50ch">
+        <li><b>Every navigation app optimizes one thing: distance.</b> None account for a rider or walker's heat exposure.</li>
+        <li><b>CoolPath is the decision layer</b> between temperature data and the people — and infrastructure — exposed to it.</li>
+        <li><b>Runs on data cities already have.</b> No new sensors, no hardware — just the FortyGuard API and a map.</li>
+      </ul>
+      <div class="callout">
+        <div class="l">Measurable outcome</div>
+        <p>Every route comes with a concrete number: <b>the hours of extreme-heat exposure avoided</b> — a metric institutions can report and act on.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · FORTYGUARD API -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">FortyGuard Temperature API</div>
+      <h2>Real data, everywhere it matters.</h2>
+      <table class="apitable">
+        <tr><td class="ep">POST /v1/heatmap · tcm</td><td class="use"><b>Instantaneous temperature</b> — shown to the user</td></tr>
+        <tr><td class="ep">POST /v1/heatmap · exceedance</td><td class="use"><b>Daily heat-exposure hours</b> — weights the routing engine <em>and</em> powers the heat-island map</td></tr>
+        <tr><td class="ep">POST /v1/env_params</td><td class="use"><b>Heat index, humidity, air quality</b> — the "why this block is hot"</td></tr>
+        <tr><td class="ep">POST /v1/heat_intelligence</td><td class="use"><b>Deep-dive report</b> — the agent's premium analysis</td></tr>
+        <tr><td class="ep">GET /v1/status · credits</td><td class="use"><b>Async submit-and-poll</b> + self-limiting on credit usage</td></tr>
+      </table>
+      <p class="apinote"><b>Cached in Postgres · keys stay server-side · never re-spend a credit on an identical query.</b></p>
+    </div>
+  </section>
+
+  <!-- 6 · IMPACT -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">Impact</div>
+      <h2>Built for who owns the sidewalk.</h2>
+      <div class="grid2">
+        <div>
+          <h3>Decision-makers</h3>
+          <ul class="points">
+            <li>Transit agencies — heat-aware first/last-mile</li>
+            <li>Universities &amp; large campuses</li>
+            <li>City walkability &amp; climate offices</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Beyond the app</h3>
+          <ul class="points">
+            <li><b>Integration API</b> — a drop-in coolest-route service for delivery &amp; mobility apps</li>
+            <li><b>Heat-island map</b> — shows cities where shade &amp; cooling deliver the most protection</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · FUTURE -->
+  <section class="slide">
+    <div class="inner">
+      <div class="eyebrow">What's next</div>
+      <h2>From pilot to platform.</h2>
+      <ul class="points" style="max-width:52ch">
+        <li><b>Multi-city expansion</b> — the architecture generalizes to any FortyGuard-covered U.S. city.</li>
+        <li><b>Published SDK + authed API</b> — a real B2B routing service with keys and rate limiting.</li>
+        <li><b>Monitoring agent</b> — scheduled heat sweeps and alerts for a corridor or campus.</li>
+        <li><b>Cooling-infrastructure planning</b> — layer tree-canopy &amp; shade data to model interventions.</li>
+      </ul>
+      <p class="closing">CoolPath doesn't just route around heat — it <b>maps the climate risk.</b></p>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button id="prev" aria-label="Previous slide">‹</button>
+  <button id="next" aria-label="Next slide">›</button>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let i = 0;
+  const prog = document.getElementById('prog');
+  const cur = document.getElementById('cur');
+  function show(n){
+    i = Math.max(0, Math.min(total-1, n));
+    slides.forEach((s,k)=> s.classList.toggle('active', k===i));
+    prog.style.width = ((i+1)/total*100) + '%';
+    cur.textContent = i+1;
+  }
+  function next(){ show(i+1); }
+  function prev(){ show(i-1); }
+  document.getElementById('next').onclick = next;
+  document.getElementById('prev').onclick = prev;
+  document.addEventListener('keydown', e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){ e.preventDefault(); next(); }
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); prev(); }
+    else if(e.key==='Home'){ show(0); } else if(e.key==='End'){ show(total-1); }
+  });
+  document.getElementById('deck').addEventListener('click', e=>{
+    if(e.target.closest('.nav')||e.target.closest('a')) return;
+    next();
+  });
+  show(0);
+</script>

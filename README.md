@@ -86,7 +86,7 @@ is the concrete benefit: how many fewer hours/day of extreme-heat exposure the c
 
 ```js
 // JavaScript — e.g. inside a delivery app's routing step
-const res = await fetch("https://<coolpath-host>/api/route", {
+const res = await fetch("https://coolpath-ai-fortyguard-hackathon-production.up.railway.app/api/route", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
@@ -102,7 +102,7 @@ console.log(`Cooler route saves ${exposureReductionHours} hrs/day of extreme hea
 ```python
 # Python
 import requests
-r = requests.post("https://<coolpath-host>/api/route", json={
+r = requests.post("https://coolpath-ai-fortyguard-hackathon-production.up.railway.app/api/route", json={
     "origin": {"lat": 33.4725, "lon": -112.0901},
     "destination": {"lat": 33.4889, "lon": -112.0981},
     "date": "2025-07-20", "time": "14:00",
@@ -147,15 +147,18 @@ npm run dev               # http://localhost:5173  (proxies /api to the backend)
 
 ## Deployment (all free tier)
 
-- **Database** — already handled by Neon (free, no card).
-- **Backend** — Render free web service. Push this repo to GitHub, then Render → New → Blueprint
-  and select the repo; [`render.yaml`](render.yaml) configures it. Add the secret env vars
-  (`FORTYGUARD_API_KEY`, `GEMINI_API_KEY`, `NVIDIA_API_KEY`, `DATABASE_URL`) in the dashboard.
-  Note: free instances sleep after inactivity — the first request after idle takes ~30–50s.
-  Ping `/api/health` a few minutes before demoing to warm it up.
-- **Frontend** — Vercel or Netlify. Set the project root to `apps/web`, and set the
-  `VITE_API_BASE` environment variable to the Render backend URL (e.g.
-  `https://coolpath-server.onrender.com`).
+**Live backend:** https://coolpath-ai-fortyguard-hackathon-production.up.railway.app
+
+- **Database** — Neon (free, no card).
+- **Backend** — Railway free web service. Push this repo to GitHub, then Railway → New →
+  deploy from the repo. Set **Root Directory** to `apps/server`, build `npm install`,
+  start `npm start`, and add the env vars (`FORTYGUARD_API_KEY`, `GEMINI_API_KEY`,
+  `NVIDIA_API_KEY`, `DATABASE_URL`) — `PORT` is injected automatically. Note: free instances
+  sleep after inactivity — the first request after idle takes ~30–50s, so ping `/api/health`
+  a few minutes before demoing to warm it up.
+- **Frontend** — Vercel. Set the project **Root Directory** to `apps/web`, and set the
+  `VITE_API_BASE` environment variable to the Railway backend URL
+  (`https://coolpath-ai-fortyguard-hackathon-production.up.railway.app`).
 
 ## Notes
 
