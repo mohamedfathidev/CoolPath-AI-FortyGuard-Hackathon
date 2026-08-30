@@ -36,8 +36,10 @@ interface PollOptions {
   backoffMs?: number[];
 }
 
-// Empirically, a small heatmap tile took ~30-40s to complete — budget generously.
-const DEFAULT_BACKOFF_MS = [3000, 5000, 8000, 12000, 20000, 20000, 20000];
+// A small heatmap completes in ~30-40s, but the wider Central+Downtown bbox (~1600 tiles)
+// can take longer on a cold cache miss — budget ~3 min of polling so first-time requests on
+// un-warmed dates don't fail. Once cached in Postgres, repeats are instant regardless.
+const DEFAULT_BACKOFF_MS = [3000, 5000, 8000, 12000, 20000, 20000, 20000, 30000, 30000, 30000];
 // Heat Intelligence reports can take "several minutes" per FortyGuard's docs —
 // poll longer, but still bounded so the agent turn doesn't hang indefinitely.
 // Heat Intelligence generates a full PDF report and genuinely takes 2-4 minutes; measured
