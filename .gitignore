@@ -9,3 +9,6 @@ data/*.db
 data/*.sqlite
 apps/server/data/*.db
 *.tsbuildinfo
+
+# Submission form — contains the FortyGuard API key, keep local
+form-fortyguard.html
