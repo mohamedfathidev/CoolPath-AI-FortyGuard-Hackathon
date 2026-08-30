@@ -48,7 +48,16 @@ function tileCentroid(coords: [number, number][]): { lon: number; lat: number } 
  */
 export async function getHeatIslands(fortyGuard: FortyGuardClient, date: string): Promise<HeatIslandsResult> {
   const city = CITY_CONFIGS[DEFAULT_CITY];
-  const polygon = bboxToPolygon(city.bbox.minLon, city.bbox.minLat, city.bbox.maxLon, city.bbox.maxLat);
+
+  // The heat-island view covers a wider area than routing (routing is tied to the OSM graph;
+  // the heat map isn't). Expand the pilot bbox ~2x per side (~4x area, still well under
+  // FortyGuard's ~130 km^2 / 50 mi^2 per-request cap) so it shows more of Phoenix at once.
+  const b = city.bbox;
+  const cLat = (b.minLat + b.maxLat) / 2;
+  const cLon = (b.minLon + b.maxLon) / 2;
+  const halfLat = (b.maxLat - b.minLat);
+  const halfLon = (b.maxLon - b.minLon);
+  const polygon = bboxToPolygon(cLon - halfLon, cLat - halfLat, cLon + halfLon, cLat + halfLat);
 
   const heatmap = await fortyGuard.getHeatmap({
     polygon,

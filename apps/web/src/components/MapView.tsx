@@ -159,10 +159,13 @@ export default function MapView({ route, origin, destination, selection, heatIsl
       if (!src) return;
       src.setData(heatTilesGeoJson(heatIslands ?? null));
       if (heatIslands && heatIslands.tiles.length && !route) {
+        // Fit to the actual tile extent (the heat view covers a wider area than routing).
+        const lons = heatIslands.tiles.map((t) => t.lon);
+        const lats = heatIslands.tiles.map((t) => t.lat);
         map.fitBounds(
           [
-            [CITY_BBOX.minLon, CITY_BBOX.minLat],
-            [CITY_BBOX.maxLon, CITY_BBOX.maxLat],
+            [Math.min(...lons), Math.min(...lats)],
+            [Math.max(...lons), Math.max(...lats)],
           ],
           { padding: 40, duration: 500 }
         );
