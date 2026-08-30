@@ -1,4 +1,4 @@
-# CoolPath Agent
+# CoolPath AI
 
 A heat-aware walking route planner for Phoenix, AZ — built on [FortyGuard](https://fortyguard.com)'s
 temperature intelligence API for the FortyGuard Hackathon '26 (Track 1 · Resilient Cities +
