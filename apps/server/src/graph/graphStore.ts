@@ -1,5 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
 export interface Edge {
   to: number;
@@ -39,8 +42,11 @@ export function loadStreetGraph(citySlug: string, dataDir?: string): StreetGraph
   const cached = cache.get(citySlug);
   if (cached) return cached;
 
+  // Resolve relative to THIS source file, not process.cwd(): on Railway (rootDir=apps/server)
+  // cwd-based paths overshoot to a nonexistent /data. The graph lives at apps/server/data,
+  // which is apps/server/src/graph -> ../../data.
   const graphPath = path.resolve(
-    dataDir ?? path.resolve(process.cwd(), "..", "..", "data"),
+    dataDir ?? path.resolve(moduleDir, "..", "..", "data"),
     "cities",
     citySlug,
     "graph.geojson"
