@@ -6,18 +6,18 @@ export interface CityConfig {
   bbox: { minLat: number; minLon: number; maxLat: number; maxLon: number };
 }
 
-// Encanto Park + surrounding blocks, Phoenix, AZ — pilot area. ~2.2km x 2.3km
-// (~5.1 km^2, well under the 10mi^2/130km^2 cap). Chosen over plain downtown
-// because live FortyGuard data showed the downtown-pavement-only bbox is
-// thermally flat (~0.07degC spread) — everywhere is uniformly hot, so no
-// route can meaningfully differ. This bbox includes a large park (measured
-// ~0.3degC / 0.5degF cooler pockets) alongside dense urban blocks.
+// Encanto Park + surrounding blocks, Phoenix, AZ — pilot area. ~3.1km x 2.6km
+// (~2x the original ~5km^2 pilot, still well under the 10mi^2/130km^2 cap).
+// Widened from the original Encanto-only bbox to cover more of central Phoenix
+// for routing. Kept modest (2x, not 4x) to stay within Railway's 512MB free-tier
+// memory when the OSM walking graph loads. Includes Encanto Park (cooler pockets)
+// alongside denser urban blocks so heat-optimized routes still have real signal.
 export const CITY_CONFIGS: Record<string, CityConfig> = {
   phoenix: {
     slug: "phoenix",
-    name: "Phoenix, AZ (Encanto Park area)",
+    name: "Phoenix, AZ (Central)",
     geocodeLabel: "Phoenix, AZ",
-    bbox: { minLat: 33.47, minLon: -112.1, maxLat: 33.49, maxLon: -112.075 },
+    bbox: { minLat: 33.466, minLon: -112.105, maxLat: 33.494, maxLon: -112.07 },
   },
 };
 
