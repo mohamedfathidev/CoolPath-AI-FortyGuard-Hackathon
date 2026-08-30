@@ -42,15 +42,23 @@ export function loadStreetGraph(citySlug: string, dataDir?: string): StreetGraph
   const cached = cache.get(citySlug);
   if (cached) return cached;
 
-  // Resolve relative to THIS source file, not process.cwd(): on Railway (rootDir=apps/server)
-  // cwd-based paths overshoot to a nonexistent /data. The graph lives at apps/server/data,
-  // which is apps/server/src/graph -> ../../data.
-  const graphPath = path.resolve(
-    dataDir ?? path.resolve(moduleDir, "..", "..", "data"),
-    "cities",
-    citySlug,
-    "graph.geojson"
-  );
+  // Try several candidate locations and use the first that exists. Path resolution differs
+  // between local dev and hosts like Railway (rootDir=apps/server makes cwd /app), so instead
+  // of guessing one path we probe the likely ones. Primary is apps/server/data resolved
+  // relative to THIS source file (survives any working directory).
+  const rel = ["cities", citySlug, "graph.geojson"];
+  const candidates = [
+    dataDir ? path.resolve(dataDir, ...rel) : null,
+    path.resolve(moduleDir, "..", "..", "data", ...rel), // apps/server/data (deployed)
+    path.resolve(moduleDir, "..", "..", "..", "..", "data", ...rel), // repo-root data (older layout)
+    path.resolve(process.cwd(), "data", ...rel),
+    path.resolve(process.cwd(), "apps", "server", "data", ...rel),
+  ].filter((p): p is string => p !== null);
+
+  const graphPath = candidates.find((p) => fs.existsSync(p));
+  if (!graphPath) {
+    throw new Error(`Street graph for "${citySlug}" not found. Tried:\n${candidates.join("\n")}`);
+  }
   const raw = fs.readFileSync(graphPath, "utf-8");
   const geojson = JSON.parse(raw) as GraphGeoJson;
 
