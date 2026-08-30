@@ -45,8 +45,8 @@ body {
 }
 
 .sidebar {
-  width: min(380px, 40vw);
-  min-width: 280px;
+  width: min(480px, 46vw);
+  min-width: 340px;
   flex-shrink: 0;
   padding: 16px;
   overflow-y: auto;
@@ -591,10 +591,29 @@ button[type="submit"]:disabled {
   padding: 12px 14px;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
+  overflow-wrap: anywhere;
 }
 
 .agent-answer :first-child { margin-top: 0; }
 .agent-answer :last-child { margin-bottom: 0; }
+
+/* Markdown tables in agent answers scroll instead of clipping off the sidebar edge. */
+.agent-answer table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.agent-answer th, .agent-answer td {
+  border: 1px solid #e2e8f0;
+  padding: 5px 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.agent-answer th { background: #f1f5f9; font-weight: 600; }
 
 .agent-answer h1, .agent-answer h2, .agent-answer h3, .agent-answer h4 {
   font-size: 0.92rem;
