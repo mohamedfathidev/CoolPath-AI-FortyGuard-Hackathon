@@ -21,7 +21,11 @@ const TOOL_LABELS: Record<string, string> = {
   check_credits: "Checking FortyGuard credits (POST /v1/system/fetch-api-key-usage)",
 };
 
+// The first prompt uses a pair verified (by real API calls) to produce a genuinely different
+// heat-optimized route — most pairs come back identical when no cooler detour exists, which is
+// honest data behavior. This one reliably diverges (~26m extra for ~0.18 fewer heat-hours/day).
 const EXAMPLE_PROMPTS = [
+  "Walk from Encanto Park to St Gregory Parish Hall at 2pm on July 20th 2025 — find me the coolest route and explain why it's cooler.",
   "Give me a detailed heat intelligence report for Encanto Park on July 15th 2024.",
 ];
 
