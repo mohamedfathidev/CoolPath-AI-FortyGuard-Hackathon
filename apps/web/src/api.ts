@@ -29,6 +29,39 @@ export interface GeocodeResultData {
   displayName: string;
 }
 
+export interface HeatTileData {
+  lon: number;
+  lat: number;
+  exposureHours: number;
+}
+
+export interface HotspotData {
+  lon: number;
+  lat: number;
+  exposureHours: number;
+  label: string;
+}
+
+export interface HeatIslandsData {
+  city: string;
+  date: string;
+  thresholdF: number;
+  thresholdC: number;
+  minHours: number;
+  maxHours: number;
+  meanHours: number;
+  spreadHours: number;
+  tiles: HeatTileData[];
+  hotspots: HotspotData[];
+  insight: string;
+}
+
+export async function fetchHeatIslands(date: string): Promise<HeatIslandsData> {
+  const res = await fetch(`${API_BASE}/api/heat-islands?date=${encodeURIComponent(date)}`);
+  if (!res.ok) throw new Error((await res.json()).error ?? `Heat islands request failed (${res.status})`);
+  return res.json();
+}
+
 export async function geocodeQuery(q: string): Promise<GeocodeResultData> {
   const res = await fetch(`${API_BASE}/api/geocode?q=${encodeURIComponent(q)}`);
   if (!res.ok) throw new Error((await res.json()).error ?? `Geocoding failed (${res.status})`);

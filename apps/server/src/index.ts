@@ -6,6 +6,7 @@ import { creditsRouter } from "./routes/credits.js";
 import { routeRouter } from "./routes/route.js";
 import { agentRouter } from "./routes/agent.js";
 import { geocodeRouter } from "./routes/geocode.js";
+import { heatIslandsRouter } from "./routes/heatIslands.js";
 
 const app = express();
 app.use(cors());
@@ -16,6 +17,7 @@ app.use("/api/credits", creditsRouter);
 app.use("/api/route", routeRouter);
 app.use("/api/agent", agentRouter);
 app.use("/api/geocode", geocodeRouter);
+app.use("/api/heat-islands", heatIslandsRouter);
 
 const port = Number(process.env.PORT ?? 8787);
 app.listen(port, () => {

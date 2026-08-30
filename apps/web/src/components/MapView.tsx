@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import maplibregl, { Map as MlMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import type { RouteResultData } from "../api";
+import type { HeatIslandsData, RouteResultData } from "../api";
 import { CITY_BBOX } from "../cityConfig";
 
 const OSM_STYLE: maplibregl.StyleSpecification = {
@@ -64,14 +64,26 @@ function pinElement(label: string, color: string): HTMLDivElement {
   return el;
 }
 
+function heatTilesGeoJson(data: HeatIslandsData | null) {
+  return {
+    type: "FeatureCollection" as const,
+    features: (data?.tiles ?? []).map((t) => ({
+      type: "Feature" as const,
+      properties: { hours: t.exposureHours },
+      geometry: { type: "Point" as const, coordinates: [t.lon, t.lat] },
+    })),
+  };
+}
+
 interface MapViewProps {
   route: RouteResultData | null;
   origin: { lat: number; lon: number } | null;
   destination: { lat: number; lon: number } | null;
   selection: "both" | "shortest" | "heatOptimized";
+  heatIslands?: HeatIslandsData | null;
 }
 
-export default function MapView({ route, origin, destination, selection }: MapViewProps) {
+export default function MapView({ route, origin, destination, selection, heatIslands }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
   const markersRef = useRef<Marker[]>([]);
@@ -89,6 +101,32 @@ export default function MapView({ route, origin, destination, selection }: MapVi
     mapRef.current = map;
 
     map.on("load", () => {
+      // Heat-island overlay (added first so routes/markers draw on top). Each tile is a circle
+      // coloured cool→hot by hours/day above the threshold — the climate heat-island view.
+      map.addSource("heat-islands", { type: "geojson", data: heatTilesGeoJson(null) });
+      map.addLayer({
+        id: "heat-islands",
+        type: "circle",
+        source: "heat-islands",
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 12, 14, 15, 22, 17, 34],
+          "circle-blur": 0.35,
+          "circle-opacity": 0.75,
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "rgba(255,255,255,0.5)",
+          "circle-color": [
+            "interpolate",
+            ["linear"],
+            ["get", "hours"],
+            10, "#2c7bb6",
+            11.5, "#abd9e9",
+            12.5, "#ffffbf",
+            13, "#fdae61",
+            13.5, "#d7191c",
+          ],
+        },
+      });
+
       map.addSource("shortest-route", { type: "geojson", data: lineGeoJson([]) });
       map.addLayer({
         id: "shortest-route",
@@ -111,6 +149,28 @@ export default function MapView({ route, origin, destination, selection }: MapVi
       mapRef.current = null;
     };
   }, []);
+
+  // Heat-island overlay update — separate from routes so toggling tabs doesn't refit route bounds.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const apply = () => {
+      const src = map.getSource("heat-islands") as maplibregl.GeoJSONSource | undefined;
+      if (!src) return;
+      src.setData(heatTilesGeoJson(heatIslands ?? null));
+      if (heatIslands && heatIslands.tiles.length && !route) {
+        map.fitBounds(
+          [
+            [CITY_BBOX.minLon, CITY_BBOX.minLat],
+            [CITY_BBOX.maxLon, CITY_BBOX.maxLat],
+          ],
+          { padding: 40, duration: 500 }
+        );
+      }
+    };
+    if (map.isStyleLoaded()) apply();
+    else map.once("load", apply);
+  }, [heatIslands, route]);
 
   useEffect(() => {
     const map = mapRef.current;

@@ -432,6 +432,138 @@ button[type="submit"]:disabled {
 .tool-trace li.ok { color: #166534; }
 .tool-trace li.error { color: #dc2626; }
 
+.heat-islands {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hi-intro {
+  font-size: 0.82rem;
+  color: #475569;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.hi-load {
+  padding: 10px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hi-load:disabled {
+  background: #94a3b8;
+  cursor: default;
+}
+
+.hi-stats {
+  display: flex;
+  gap: 8px;
+}
+
+.hi-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 4px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.hi-stat.cool { background: #e0f2fe; }
+.hi-stat.gap { background: #fef3c7; }
+.hi-stat.hot { background: #fee2e2; }
+
+.hi-val {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.hi-lbl {
+  font-size: 0.66rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.hi-h {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: #0f172a;
+}
+
+.hi-hotspots {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  counter-reset: hot;
+}
+
+.hi-hotspots li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  padding: 6px 8px;
+  background: #f8fafc;
+  border-radius: 6px;
+}
+
+.hi-rank {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #dc2626;
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hi-place {
+  flex: 1;
+  color: #334155;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hi-hours {
+  font-weight: 600;
+  color: #b91c1c;
+  flex-shrink: 0;
+}
+
+.hi-insight {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.hi-insight strong {
+  font-size: 0.82rem;
+  color: #166534;
+}
+
+.hi-insight p {
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: #334155;
+}
+
 .model-badge {
   display: flex;
   align-items: center;

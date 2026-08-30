@@ -99,3 +99,19 @@ export async function autocompleteSearch(query: string, limit = 6): Promise<Geoc
       displayName: photonLabel(f.properties) || query,
     }));
 }
+
+/** Turn a coordinate into a human-readable nearest-place label via Photon reverse geocoding. */
+export async function reverseGeocode(lat: number, lon: number): Promise<string | undefined> {
+  try {
+    const url = new URL("https://photon.komoot.io/reverse");
+    url.searchParams.set("lat", String(lat));
+    url.searchParams.set("lon", String(lon));
+    const res = await fetch(url, { headers: { "User-Agent": "CoolPath-Agent-Hackathon/0.1" } });
+    if (!res.ok) return undefined;
+    const data = (await res.json()) as PhotonResponse;
+    const f = data.features[0];
+    return f ? photonLabel(f.properties) || undefined : undefined;
+  } catch {
+    return undefined;
+  }
+}

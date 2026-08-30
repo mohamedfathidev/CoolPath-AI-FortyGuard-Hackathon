@@ -45,6 +45,86 @@ area, so it can't meaningfully distinguish routes. Cumulative daily heat exposur
 (hours/day above 95°F) has real spatial spread (~1–3 hrs), so that's what drives the
 heat-optimized route. The route weighting is `distance_m × (1 + β × max(0, exposure_hrs − comfort_hrs))`.
 
+## Integration API
+
+CoolPath's heat-aware routing isn't just a UI — it's a plain REST endpoint any delivery,
+mobility, or logistics app can call to get the **coolest viable route**, not just the shortest.
+Send two points and a time; get both routes plus the heat trade-off as JSON.
+
+### `POST /api/route`
+
+Request:
+
+```json
+{
+  "origin":      { "lat": 33.4725, "lon": -112.0901 },
+  "destination": { "lat": 33.4889, "lon": -112.0981 },
+  "date": "2025-07-20",
+  "time": "14:00",
+  "beta": 0.5
+}
+```
+
+Response (trimmed):
+
+```json
+{
+  "city": "Phoenix, AZ (Encanto Park area)",
+  "shortest":      { "distance_m": 2667, "duration_s": 1905, "avgTemperatureF": 98.5, "avgExposureHours": 12.6 },
+  "heatOptimized": { "distance_m": 2691, "duration_s": 1922, "avgTemperatureF": 98.5, "avgExposureHours": 12.5,
+                     "coordinates": [[-112.0901, 33.4725], "…"] },
+  "extraDistance_m": 24,
+  "extraDuration_s": 17,
+  "exposureReductionHours": 0.15
+}
+```
+
+`coordinates` on each route is a `[lon, lat]` polyline ready to drop onto a map. `exposureReductionHours`
+is the concrete benefit: how many fewer hours/day of extreme-heat exposure the cooler route buys.
+
+### Example clients
+
+```js
+// JavaScript — e.g. inside a delivery app's routing step
+const res = await fetch("https://<coolpath-host>/api/route", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    origin: { lat: 33.4725, lon: -112.0901 },
+    destination: { lat: 33.4889, lon: -112.0981 },
+    date: "2025-07-20", time: "14:00",
+  }),
+});
+const { heatOptimized, exposureReductionHours } = await res.json();
+console.log(`Cooler route saves ${exposureReductionHours} hrs/day of extreme heat`);
+```
+
+```python
+# Python
+import requests
+r = requests.post("https://<coolpath-host>/api/route", json={
+    "origin": {"lat": 33.4725, "lon": -112.0901},
+    "destination": {"lat": 33.4889, "lon": -112.0981},
+    "date": "2025-07-20", "time": "14:00",
+})
+route = r.json()
+print("cooler route:", route["heatOptimized"]["coordinates"])
+```
+
+### Other endpoints
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/route` | Shortest vs. heat-optimized walking route + deltas |
+| `POST /api/agent` | Natural-language agent (SSE stream of tool calls + answer) |
+| `GET /api/heat-islands?date=YYYY-MM-DD` | City-wide heat-island map (per-tile exposure hours, hotspots, insight) |
+| `GET /api/geocode?q=` · `/api/geocode/autocomplete?q=` | Place lookup |
+| `GET /api/credits` · `GET /api/health` | FortyGuard credit usage · health check |
+
+**Roadmap:** publish a versioned `@coolpath/client` SDK, add API-key auth + rate limiting, and
+expand beyond the Phoenix pilot to any FortyGuard-covered U.S. city — turning this into a
+drop-in heat-aware routing service for third-party fleets.
+
 ## Local development
 
 Prerequisites: Node 20+, a Postgres connection string (free from [Neon](https://neon.tech)),
